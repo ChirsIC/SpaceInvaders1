@@ -46,7 +46,28 @@ class Game():
 
     def draw(self):
         """Draw the HUD and other information to display"""
-        pass
+        WHITE = (255, 255, 255)
+
+        # Set text
+        score_text = self.font.render(f"Score: {self.score}", True, WHITE)
+        score_rect = score_text.get_rect()
+        score_rect.centerx = WINDOW_WIDTH // 2
+        score_rect.top = 10
+
+        round_text = self.font.render(f"Round {self.round_number}", True, WHITE)
+        round_rect = round_text.get_rect()
+        round_rect.topleft = (1000, 10)
+
+        lives_text = self.font.render(f"Lives: {self.player.lives}", True, WHITE)
+        lives_rect = lives_text.get_rect()
+        lives_rect.topleft = (20, 10)
+
+        #Blit the HUD to the display
+        display_surface.blit(score_text, score_rect)
+        display_surface.blit(round_text, round_rect)
+        display_surface.blit(lives_text, lives_rect)
+        pygame.draw.line(display_surface, WHITE, (0, 50), (WINDOW_WIDTH, 50))
+        pygame.draw.line(display_surface, WHITE, (0, WINDOW_HEIGHT - 100), (WINDOW_WIDTH, WINDOW_HEIGHT - 100))
 
     def shift_aliens(self):
         """Shift a wave of aliens down the screen and reverse direction"""
@@ -54,18 +75,32 @@ class Game():
 
     def check_collisions(self):
         """Check for collisions"""
-        pass
+        #See if any bullet in the player bullet group hits an alien in the alien group
+        if pygame.sprite.groupcollide(self.player_bullet_group, self.alien_group, True, True):
+            self.alien_hit_sound.play()
+            self.score += 100
+
+        #See if the player has collided with any bullet in the alien bullet group
+        if pygame.sprite.spritecollide(self.player, self.alien_bullet_group, True):
+            self.player_hit_sound.play()
+            self.player.lives -= 1
+
+            self.check_game_status("You've been hit", "Press 'ENTER' to continue")
 
     def check_round_completion(self):
         """Check to see if a player has completed a single round"""
-        pass
+        if not (self.alien_group):
+            self.score += 1000 * self.round_number
+            self.round_number += 1
+            self.start_new_round()
 
     def start_new_round(self):
         """Start a new round"""
         # Create a grid of Aliens 11 columns and 5 rows.
         for col in range(11):
             for row in range(5):
-                Alien((64 + col * 64), (64 + row * 64), self.round_number, self.alien_bullet_group)
+                alien = Alien((64 + col * 64), (64 + row * 64), self.round_number, self.alien_bullet_group)
+                self.alien_group.add(alien)
                 # first arg (x) is going to be 64 + col * 64
                 # second arg (y) is going to be 64 + row * 64
                 # third arg (velocity) is going to be self.round_number
@@ -77,7 +112,11 @@ class Game():
 
     def check_game_status(self, main_text, sub_text):
         """Check to see the status of the game and how the player died"""
-        pass
+        self.alien_bullet_group.empty()
+        self.player_bullet_group.empty()
+        self.player.reset()
+        for alien in self.alien_group:
+            alien.reset()
 
     def pause_game(self, main_text, sub_text):
         """Pauses the game"""
