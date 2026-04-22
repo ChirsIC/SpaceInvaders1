@@ -71,7 +71,26 @@ class Game():
 
     def shift_aliens(self):
         """Shift a wave of aliens down the screen and reverse direction"""
-        pass
+        shift = False
+        for alien in self.alien_group.sprites():
+            if alien.rect.left <= 0 or alien.rect.right >= WINDOW_WIDTH:
+                shift = True
+
+        if shift:
+            breach = False
+            for alien in self.alien_group.sprites():
+                alien.rect.y += 10 * self.round_number
+
+                alien.direction *= -1
+                alien.rect.x += alien.direction * alien.velocity
+                if alien.rect.bottom >= WINDOW_HEIGHT - 100:
+                    breach = True
+            if breach:
+                self.breach_sound.play()
+                self.player.lives -= 1
+                self.check_game_status("Aliens breach the line", "Press 'Enter' to continue")
+
+
 
     def check_collisions(self):
         """Check for collisions"""
@@ -112,11 +131,15 @@ class Game():
 
     def check_game_status(self, main_text, sub_text):
         """Check to see the status of the game and how the player died"""
+
         self.alien_bullet_group.empty()
         self.player_bullet_group.empty()
         self.player.reset()
         for alien in self.alien_group:
             alien.reset()
+
+        if self.player.lives == 0:
+            self.reset_game()
 
     def pause_game(self, main_text, sub_text):
         """Pauses the game"""
