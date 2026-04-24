@@ -56,11 +56,11 @@ class Game():
 
         round_text = self.font.render(f"Round {self.round_number}", True, WHITE)
         round_rect = round_text.get_rect()
-        round_rect.topleft = (1000, 10)
+        round_rect.topleft = (20, 10)
 
         lives_text = self.font.render(f"Lives: {self.player.lives}", True, WHITE)
         lives_rect = lives_text.get_rect()
-        lives_rect.topleft = (20, 10)
+        lives_rect.topright = (WINDOW_WIDTH - 20, 10)
 
         #Blit the HUD to the display
         display_surface.blit(score_text, score_rect)
@@ -103,12 +103,11 @@ class Game():
         if pygame.sprite.spritecollide(self.player, self.alien_bullet_group, True):
             self.player_hit_sound.play()
             self.player.lives -= 1
-
             self.check_game_status("You've been hit", "Press 'ENTER' to continue")
 
     def check_round_completion(self):
         """Check to see if a player has completed a single round"""
-        if not (self.alien_group):
+        if not self.alien_group:
             self.score += 1000 * self.round_number
             self.round_number += 1
             self.start_new_round()
@@ -140,6 +139,8 @@ class Game():
 
         if self.player.lives == 0:
             self.reset_game()
+        else:
+            self.pause_game(main_text, sub_text)
 
     def pause_game(self, main_text, sub_text):
         """Pauses the game"""
